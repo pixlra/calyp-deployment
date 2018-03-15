@@ -1,0 +1,6 @@
+usr/include/CalypDefs.h
+usr/include/CalypFrame.h
+usr/include/CalypModuleIf.h
+usr/include/CalypOptions.h
+usr/include/CalypStream.h
+usr/share/calyp/CalypConfig.cmake

@@ -1,0 +1,51 @@
+Source: calyp
+Section: video
+Priority: optional
+Maintainer: Joao Carreira <jfmcarreira@gmail.com>
+Build-Depends: cmake,
+               debhelper (>= 9.2.0),
+               libavcodec-dev,
+               libavformat-dev,
+               libavutil-dev,
+               libswscale-dev,
+               libopencv-dev (>= 2.4.9),
+               libopencv-contrib-dev  (>= 2.4.9),
+               qt5-default (>= 5.2.0),
+               qtbase5-dev (>= 5.2.0)
+Standards-Version: 3.9.4
+Homepage: https://github.com/pixlra/playuver
+
+Package: calyp
+Architecture: any
+Depends: libcalyp, ${misc:Depends}, ${shlibs:Depends}
+Description: Raw video player focusing on image and video processing
+              .
+              Calyp supports the following features:
+              Support for wide range of raw video formats;
+              Support for libavformat and libavcodec;
+              Support for OpenCV imag/video processing library
+              Advanced frame zoom with easy to use pan function
+              Usefull information in status bar, e.g., pixel information
+              Usefull sidebars with stream and frame information, e.g., frame histogram
+              Constant growing libs for stream and frame processing (CalypStream CalypFrame)
+              Advanced API for frame/video processing algorithms
+              Frame level quality measurement API based on the CalypFrame class
+
+Package: calyp-tools
+Architecture: any
+Depends: libcalyp, ${misc:Depends}, ${shlibs:Depends}
+Description: CLI interface for Calyp plugins
+
+Package: libcalyp
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Low level library to handle video stream
+             This library is compatible with OpenCV and FFmpeg
+
+Package: libcalyp-dev
+Architecture: any
+Depends: libcalyp, ${misc:Depends}
+Description: Low level library to handle video stream
+             This library is compatible with OpenCV and FFmpeg
+             .
+             This package contains the development files for CalypLib
