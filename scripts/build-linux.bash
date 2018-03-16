@@ -5,34 +5,22 @@ pushd `dirname $0` > /dev/null
 SCRIPTPATH=$(pwd -P)
 popd > /dev/null
 
-LOG_OUTPUT=/tmp/playuver_build_out
-TMPDIR=/tmp/playuver-build
+LOG_OUTPUT=/tmp/calyp_build_out
+TMPDIR=/tmp/calyp-build
 
-OUTPUT_DIR=/nfs/data/share/PlaYUVerProject
+OUTPUT_DIR=/nfs/data/share/Calyp
 
-BUILD_NIGHTLY_PKG=0
-BUILD_STABLE_PKG=0
-VERSION=0.8.0
+VERSION=0.14.1
 
 COUNT=-1; BRANCH_TYPES= ; BRANCH_TYPES_NAMES= ; CMAKE_CFG_BRANCH= ;
-let COUNT+=1; BRANCH_TYPES[$COUNT]="stable"; BRANCH_TYPES_NAMES[$COUNT]="stable"; DEB_NAMES[$COUNT]=""; CMAKE_CFG_BRANCH[$COUNT]=""
+# let COUNT+=1; BRANCH_TYPES[$COUNT]="stable"; BRANCH_TYPES_NAMES[$COUNT]="stable"; DEB_NAMES[$COUNT]=""; CMAKE_CFG_BRANCH[$COUNT]="-DRELEASE_BUILD=ON"
 let COUNT+=1; BRANCH_TYPES[$COUNT]="master"; BRANCH_TYPES_NAMES[$COUNT]="latest"; DEB_NAMES[$COUNT]="-latest"; CMAKE_CFG_BRANCH[$COUNT]="-DRELEASE_BUILD=OFF"
-#let COUNT+=1; BRANCH_TYPES[$COUNT]="devel"; BRANCH_TYPES_NAMES[$COUNT]="experimental"; DEB_NAMES[$COUNT]="-experimental"; CMAKE_CFG_BRANCH[$COUNT]=""
 BRANCH_COUNT=$COUNT
 
 COUNT=-1; CONDITION_TYPES= ; CONDITION_TYPES_NAMES= ;
-let COUNT+=1; CONDITION_TYPES[$COUNT]="-DUSE_FFMPEG=ON -DUSE_OPENCV=ON -DUSE_QT4=OFF"; CONDITION_TYPES_NAMES[$COUNT]="wFFmpeg_wOpenCV_wQT5"
-#let COUNT+=1; CONDITION_TYPES[$COUNT]="-DUSE_FFMPEG=ON -DUSE_OPENCV=ON -DUSE_QT4=ON"; CONDITION_TYPES_NAMES[$COUNT]="wFFmpeg_wOpenCV_wQT4"
+let COUNT+=1; DEPLOY_COND[$COUNT]="1"; CONDITION_TYPES[$COUNT]="-DUSE_FFMPEG=ON -DUSE_OPENCV=ON -DUSE_QT4=OFF"; CONDITION_TYPES_NAMES[$COUNT]="wFFmpeg_wOpenCV_wQT5"
 CONDITION_COUNT=$COUNT
 
-
-function send_mail()
-{
-  mail -a ${LOG_OUTPUT} -s "PlaYUVer build  failed" jfmcarreira@gmail.com < /dev/null
-  echo/tmp/email.txt
-
-  mail -a ${LOG_OUTPUT} -s "PlaYUVer build  failed" jfmcarreira@gmail.com < /dev/null
-}
 
 function RunEchoExit() {
   echo "$@"
@@ -45,120 +33,62 @@ function RunEchoExit() {
 
 cd $SCRIPTPATH
 
-git clean -fd
+BUILD_LINUX=1
 
-# if [[ ! -d SCRIPTPATH/playuver ]]
-# then
-#   git submodule update --init --recursive
-#   git submodule update --recursive
-# fi
+if [[ $BUILD_LINUX -eq 1 ]]
+then
 
 for BRANCH_IDX in  $(seq 0 ${BRANCH_COUNT}); do
 
-  cd $SCRIPTPATH
-
   BRANCH=${BRANCH_TYPES[BRANCH_IDX]}
 
-  RunEchoExit "git -C playuver checkout $BRANCH"
-  RunEchoExit "git -C playuver pull"
+  RunEchoExit "git -C calyp checkout $BRANCH"
+  RunEchoExit "git -C calyp pull"
 
-   for COND_IDX in $(seq 0 ${CONDITION_COUNT}); do
+  for COND_IDX in $(seq 0 ${CONDITION_COUNT}); do
 
-     CMAKE_CFG="-DUPDATE_CHANNEL=${BRANCH_TYPES_NAMES[BRANCH_IDX]} ${CMAKE_CFG_BRANCH[BRANCH_IDX]} ${CONDITION_TYPES[COND_IDX]} "
+    CMAKE_CFG="-DUPDATE_CHANNEL=${BRANCH_TYPES_NAMES[BRANCH_IDX]} ${CMAKE_CFG_BRANCH[BRANCH_IDX]} ${CONDITION_TYPES[COND_IDX]} "
 
-     [[ -d ${TMPDIR} ]] && rm -R ${TMPDIR}
-     mkdir ${TMPDIR}
-     cd ${TMPDIR}
+    [[ -d ${TMPDIR} ]] && rm -R ${TMPDIR}
+    mkdir ${TMPDIR}
+    cd ${TMPDIR}
+    RunEchoExit "cmake -DCMAKE_BUILD_TYPE=Release -DPACKAGE_NAME=${BRANCH_TYPES_NAMES[BRANCH_IDX]} $CMAKE_CFG $SCRIPTPATH"
+    VERSION=$(cmake $SCRIPTPATH |& grep Version | awk '{print $3}')
+    RunEchoExit "make -j"
+    RunEchoExit "make package"
+    cd $SCRIPTPATH
 
-     RunEchoExit "cmake -DCMAKE_BUILD_TYPE=Release -DPACKAGE_NAME=${BRANCH_TYPES_NAMES[BRANCH_IDX]} $CMAKE_CFG $SCRIPTPATH"
-     RunEchoExit "make -j"
-     RunEchoExit "make package"
-
-     DEBFILE=$( find ${TMPDIR} -maxdepth 1 -iname "*.deb" )
-     ZIPFILE=$( find ${TMPDIR} -maxdepth 1 -iname "*.zip" )
-
-     mv ${DEBFILE} ${OUTPUT_DIR}/debian/playuver-${BRANCH_TYPES_NAMES[BRANCH_IDX]}-linux-amd64.deb
-     mv ${ZIPFILE} ${OUTPUT_DIR}/linux/playuver-${BRANCH_TYPES_NAMES[BRANCH_IDX]}-linux-amd64.zip
-
-     UPDATE_XML=$( find ${TMPDIR} -iname "PlaYUVerUpdate*" )
-     mv $UPDATE_XML /nfs/data/share/PlaYUVerProject/
-
-     rm -R ${TMPDIR}
-
-   done
-
-  cd $SCRIPTPATH
-
-  if [[ ! -z ${DEB_NAMES[BRANCH_IDX]} ]]
-  then
-    if [[ $BUILD_NIGHTLY_PKG == 1 ]]
+    if [[ ${DEPLOY_COND[COND_IDX]} ]]
     then
-      cd playuver
-      NIGHTLY_VERSION=$( git describe --tags | sed -r 's/-g//g' | sed -r 's/-/./g')
-      cd $SCRIPTPATH
-      sed "1 s/^.*$/playuver${DEB_NAMES[BRANCH_IDX]} (${NIGHTLY_VERSION}jfmcarreira0) trusty; urgency=low/" debian/changelog | sed -r "$ s/^.*$/ -- Joao Carreira (carreira key) <jfmcarreira@gmail.com>  $(date --rfc-2822)/" > debian/changelog
-      tar czf playuver${DEB_NAMES[BRANCH_IDX]}_${NIGHTLY_VERSION}jfmcarreira0.orig.tar.gz playuver/
-      cd playuver
-      cp ../debian . -R
-      sed "s/Source: playuver/Source: playuver${DEB_NAMES[BRANCH_IDX]}/" ../debian/control | sed -r "s/Package: playuver/Package: playuver${DEB_NAMES[BRANCH_IDX]}/" > debian/control
-      sed "s/playuver for Debian/playuver${DEB_NAMES[BRANCH_IDX]} for Debian/" ../debian/README.Debian > debian/README.Debian
-      debuild -S
-      cd $SCRIPTPATH
-      dput ppa:jfmcarreira/ppa playuver${DEB_NAMES[BRANCH_IDX]}_${NIGHTLY_VERSION}jfmcarreira0_source.changes
-    fi
-  else
-    if [[ $BUILD_STABLE_PKG == 1 ]]
-    then
-      cd playuver
-      VERSION=$(git describe --tags --abbrev=0)
-      cd $SCRIPTPATH
-      sed "1 s/^.*$/playuver(${VERSION}jfmcarreira0) trusty; urgency=low/" debian/changelog | sed -r "$ s/^.*$/ -- Joao Carreira (carreira key) <jfmcarreira@gmail.com>  $(date --rfc-2822)/" > debian/changelog
-      tar czf playuver_${VERSION}jfmcarreira0.orig.tar.gz playuver/
-      cd playuver
-      cp ../debian . -R
-      debuild -S
-      cd $SCRIPTPATH
-      dput ppa:jfmcarreira/ppa playuver_${VERSION}jfmcarreira0_source.changes
-    fi
-  fi
+      if [[ ${BRANCH_TYPES_NAMES[BRANCH_IDX]} == "stable" ]]
+      then
+        UPLOAD_NAME=${VERSION}
+        mkdir -p ${OUTPUT_DIR}/linux/${VERSION}
+        cp $( find ${TMPDIR} -maxdepth 1 -iname "*.zip" ) ${OUTPUT_DIR}/linux/${VERSION}/calyp-${UPLOAD_NAME}-linux-amd64.zip
 
+        RunEchoExit "rsync -avP ${OUTPUT_DIR}/linux/${VERSION} jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
+      fi
+      UPLOAD_NAME=${BRANCH_TYPES_NAMES[BRANCH_IDX]}
+      cp $( find ${TMPDIR} -maxdepth 1 -iname "*.deb" ) ${OUTPUT_DIR}/debian/calyp-${UPLOAD_NAME}-linux-amd64.deb
+      cp $( find ${TMPDIR} -maxdepth 1 -iname "*.zip" ) ${OUTPUT_DIR}/linux/calyp-${UPLOAD_NAME}-linux-amd64.zip
+      RunEchoExit "scp ${OUTPUT_DIR}/debian/calyp-${UPLOAD_NAME}-linux-amd64.deb jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
+      RunEchoExit "scp ${OUTPUT_DIR}/linux/calyp-${UPLOAD_NAME}-linux-amd64.zip jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
+    fi
+
+    rm -R ${TMPDIR}
+
+  done
+done
+fi
+
+WINDOWS_INSTALL_VERSION="wQT5_wOpenCV_wFFmpeg"
+BRANCH_LIST="stable latest"
+for BRANCH in ${BRANCH_LIST}
+do
+  cp ${OUTPUT_DIR}/windows/calyp-${BRANCH}_${WINDOWS_INSTALL_VERSION}-Windows-amd64.zip ${OUTPUT_DIR}/windows/calyp-${BRANCH}-windows-amd64.zip
+  cp ${OUTPUT_DIR}/windows/calyp-${BRANCH}_${WINDOWS_INSTALL_VERSION}-Windows-amd64.exe ${OUTPUT_DIR}/windows/calyp-${BRANCH}-windows-amd64-installer.exe
+
+  RunEchoExit "scp ${OUTPUT_DIR}/windows/calyp-${BRANCH}-windows-amd64.zip jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
+  RunEchoExit "scp ${OUTPUT_DIR}/windows/calyp-${BRANCH}-windows-amd64-installer.exe jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
 done
 
-DEB_INSTALL_NFS=${OUTPUT_DIR}/debian/playuver-latest-linux-amd64.deb
-DEB_INSTALL_PUB=${OUTPUT_DIR}/debian/playuver-stable-linux-amd64.deb
-ZIP_INSTALL_PUB=${OUTPUT_DIR}/linux/playuver-stable-linux-amd64.zip
-
-if [[ -f ${DEB_INSTALL_NFS} ]]
-then
-  RunEchoExit "cp ${DEB_INSTALL_NFS} /nfs/data/share/jcarreira.it.pub/apt-repo/"
-fi
-
-if [[ -f ${DEB_INSTALL_PUB} ]]
-then
-  RunEchoExit "scp ${DEB_INSTALL_PUB} jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
-fi
-
-if [[ -f ${ZIP_INSTALL_PUB} ]]
-then
-  RunEchoExit "scp ${ZIP_INSTALL_PUB} jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
-fi
-
-WINDOWS_ZIP_INSTALL_PUB=${OUTPUT_DIR}/windows/playuver-stable_wQT5_wOpenCV_wFFmpeg-Windows-amd64
-
-if [[ -f ${WINDOWS_ZIP_INSTALL_PUB}.zip ]]
-then
-  cp ${WINDOWS_ZIP_INSTALL_PUB}.zip /tmp/playuver-stable-windows-amd64.zip
-  cp ${WINDOWS_ZIP_INSTALL_PUB}.exe /tmp/playuver-stable-windows-amd64.exe
-  RunEchoExit "scp /tmp/playuver-stable-windows-amd64.zip jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
-  RunEchoExit "scp /tmp/playuver-stable-windows-amd64.exe jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
-fi
-
-WINDOWS_ZIP_INSTALL_PUB=${OUTPUT_DIR}/windows/playuver-latest_wQT5_wOpenCV_wFFmpeg-Windows-amd64
-
-if [[ -f ${WINDOWS_ZIP_INSTALL_PUB}.zip ]]
-then
-  cp ${WINDOWS_ZIP_INSTALL_PUB}.zip /tmp/playuver-latest-windows-amd64.zip
-  cp ${WINDOWS_ZIP_INSTALL_PUB}.exe /tmp/playuver-latest-windows-amd64.exe
-  RunEchoExit "scp /tmp/playuver-latest-windows-amd64.zip jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
-  RunEchoExit "scp /tmp/playuver-latest-windows-amd64.exe jfmcarreira@frs.sourceforge.net:/home/frs/project/playuver/"
-fi
