@@ -53,7 +53,7 @@ IF NOT ERRORLEVEL == 0 (
 	exit
 )
 
-echo "Syncing to IT Cluster"
+REM Sending packages to IT Cluster
 cd %PROJECTDIR%
 
 set SCRIPT="ScpScript.tmp"
