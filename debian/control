@@ -1,4 +1,4 @@
-Source: calyp
+Source: calyp-daily
 Section: video
 Priority: optional
 Maintainer: Joao Carreira <jfmcarreira@gmail.com>
@@ -15,9 +15,9 @@ Build-Depends: cmake,
 Standards-Version: 3.9.4
 Homepage: https://github.com/pixlra/playuver
 
-Package: calyp
+Package: calyp-daily
 Architecture: any
-Depends: libcalyp, ${misc:Depends}, ${shlibs:Depends}
+Depends: calyp-tools-daily, ${misc:Depends}, ${shlibs:Depends}
 Description: Raw video player focusing on image and video processing
               .
               Calyp supports the following features:
@@ -31,21 +31,7 @@ Description: Raw video player focusing on image and video processing
               Advanced API for frame/video processing algorithms
               Frame level quality measurement API based on the CalypFrame class
 
-Package: calyp-tools
-Architecture: any
-Depends: libcalyp, ${misc:Depends}, ${shlibs:Depends}
-Description: CLI interface for Calyp plugins
-
-Package: libcalyp
+Package: calyp-tools-daily
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Low level library to handle video stream
-             This library is compatible with OpenCV and FFmpeg
-
-Package: libcalyp-dev
-Architecture: any
-Depends: libcalyp, ${misc:Depends}
-Description: Low level library to handle video stream
-             This library is compatible with OpenCV and FFmpeg
-             .
-             This package contains the development files for CalypLib
+Description: CLI interface for Calyp plugins
