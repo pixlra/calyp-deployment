@@ -38,13 +38,18 @@ cd %PROJECTDIR%\calyp
 cd %PROJECTBUILDDIR%
 
 %CMAKE% -DPACKAGE_NAME=latest -DUPDATE_CHANNEL=latest -DRELEASE_BUILD=ON %PROJECTDIR%
-
+IF NOT ERRORLEVEL == 0 (
+	echo "ERROR CMAKE"
+	exit
+)
 %CMAKE% --build %PROJECTBUILDDIR% --target ALL_BUILD -- /p:Configuration=Release /m:6 >> build_log
 IF NOT ERRORLEVEL == 0 (
+	echo "ERROR BUILD"
 	exit
 )
 %CMAKE% --build %PROJECTBUILDDIR% --target INSTALL -- /p:Configuration=Release >> build_log
 IF NOT ERRORLEVEL == 0 (
+	echo "ERROR INSTALL"
 	exit
 )
 %CMAKE% --build %PROJECTBUILDDIR% --target PACKAGE -- /p:Configuration=Release >> build_log
@@ -69,7 +74,10 @@ echo put %PACKAGE_FILE%.exe >> %SCRIPT%
 echo exit >> %SCRIPT%
 rem Execute script
 %WINSCP% /script=%SCRIPT%
-rem Delete temporary script 
+IF NOT ERRORLEVEL == 0 (
+	echo "ERROR SCP"
+	exit
+)
 del %SCRIPT%
 
 :: ========== FUNCTIONS ==========
