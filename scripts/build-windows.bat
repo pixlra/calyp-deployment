@@ -7,7 +7,7 @@ set WINSCP="C:\Program Files (x86)\WinSCP\WinSCP.exe"
 CALL :NORMALIZEPATH "..\cmake-helper"
 SET PROJECTDIR=%RETVAL%
 
-CALL :NORMALIZEPATH "..\..\calyp-build-release"
+CALL :NORMALIZEPATH "..\..\calyp-build"
 SET PROJECTBUILDDIR=%RETVAL%
 
 SET PACKAGE_FILE="%PROJECTBUILDDIR%\calyp-*-Windows-amd64"
@@ -62,12 +62,12 @@ REM Sending packages to IT Cluster
 cd %PROJECTDIR%
 
 set SCRIPT="ScpScript.tmp"
-set REMOTEPATH="/nfs/data/share/PlaYUVerProject/windows"
+set REMOTEPATH="/nfs/data/share/Calyp/windows"
 
 rem Generate temporary script to upload %1
 echo option batch abort > %SCRIPT%
 echo option confirm off >> %SCRIPT%
-echo open jcarreira.it@itcluster >> %SCRIPT%
+echo open itcluster >> %SCRIPT%
 echo cd %REMOTEPATH%  >> %SCRIPT%
 echo put %PACKAGE_FILE%.zip >> %SCRIPT%
 echo put %PACKAGE_FILE%.exe >> %SCRIPT%
