@@ -7,7 +7,7 @@ set WINSCP="C:\Program Files (x86)\WinSCP\WinSCP.exe"
 CALL :NORMALIZEPATH "..\cmake-helper"
 SET PROJECTDIR=%RETVAL%
 
-CALL :NORMALIZEPATH "..\..\calyp-build-release"
+CALL :NORMALIZEPATH "..\..\calyp-build"
 SET PROJECTBUILDDIR=%RETVAL%
 
 SET PACKAGE_FILE="%PROJECTBUILDDIR%\calyp-*-Windows-amd64"
@@ -38,13 +38,18 @@ cd %PROJECTDIR%\calyp
 cd %PROJECTBUILDDIR%
 
 %CMAKE% -DPACKAGE_NAME=latest -DUPDATE_CHANNEL=latest -DRELEASE_BUILD=ON %PROJECTDIR%
-
+IF NOT ERRORLEVEL == 0 (
+	echo "ERROR CMAKE"
+	exit
+)
 %CMAKE% --build %PROJECTBUILDDIR% --target ALL_BUILD -- /p:Configuration=Release /m:6 >> build_log
 IF NOT ERRORLEVEL == 0 (
+	echo "ERROR BUILD"
 	exit
 )
 %CMAKE% --build %PROJECTBUILDDIR% --target INSTALL -- /p:Configuration=Release >> build_log
 IF NOT ERRORLEVEL == 0 (
+	echo "ERROR INSTALL"
 	exit
 )
 %CMAKE% --build %PROJECTBUILDDIR% --target PACKAGE -- /p:Configuration=Release >> build_log
@@ -57,19 +62,22 @@ REM Sending packages to IT Cluster
 cd %PROJECTDIR%
 
 set SCRIPT="ScpScript.tmp"
-set REMOTEPATH="/nfs/data/share/PlaYUVerProject/windows"
+set REMOTEPATH="/nfs/data/share/Calyp/windows"
 
 rem Generate temporary script to upload %1
 echo option batch abort > %SCRIPT%
 echo option confirm off >> %SCRIPT%
-echo open jcarreira.it@itcluster >> %SCRIPT%
+echo open itcluster >> %SCRIPT%
 echo cd %REMOTEPATH%  >> %SCRIPT%
 echo put %PACKAGE_FILE%.zip >> %SCRIPT%
 echo put %PACKAGE_FILE%.exe >> %SCRIPT%
 echo exit >> %SCRIPT%
 rem Execute script
 %WINSCP% /script=%SCRIPT%
-rem Delete temporary script 
+IF NOT ERRORLEVEL == 0 (
+	echo "ERROR SCP"
+	exit
+)
 del %SCRIPT%
 
 :: ========== FUNCTIONS ==========
