@@ -10,12 +10,10 @@ Build-Depends: cmake,
                libswscale-dev,
                libopencv-dev (>= 2.4.9),
                libopencv-contrib-dev  (>= 2.4.9),
-               qt5-default (>= 5.2.0),
                qtbase5-dev (>= 5.2.0),
                qtchooser (>= 5.2.0),
                qt5-qmake (>= 5.2.0),
                qtbase5-dev-tools (>= 5.2.0),
-               qtbase5-dev (>= 5.2.0)
 Standards-Version: 3.9.4
 Homepage: https://github.com/pixlra/playuver
 
