@@ -1,4 +1,5 @@
-## Calyp is an enhanced YUV video player based on Qt focusing on image/video analysis
+# Calyp
+## Enhanced YUV video player based on Qt focusing on image/video analysis
 
 ## Features
 - Support for libavformat and libavcodec;
@@ -12,7 +13,7 @@
 - Constant growing libs for stream and frame processing (CalypStream and CalypFrame)
 - Advanced API for frame/video processing algorithms
 - Frame level quality measurement API based on the CalypFrame class
-- Powefull command-line tool for quality and frame processing algorithms (uses the referred APIs)
+- Powerful command-line tool for quality and frame processing algorithms (uses the referred APIs)
 
 ## Modules
 - CalypLib: Low level library
@@ -21,13 +22,14 @@
 - CalypTools: High level command line interface
 
 ##  Supported Quality Metrics
-- PSNR
-- SSIM
-- MSE
+- Peak Signal-to-Noise Ratio (PSNR)
+- Structural SIMilarity (SSIM)
+- Mean Square Error (MSE)
+- Weighted Spherical PSNR (WS-PSNR)
 
 ## Frame Processing Modules
 - Component filtering
-- Frame difference, crop, shift, binarization
+- Frame difference, crop, shift, binarization and rotation
 - Sub-sampling operations
 - Measuring modules
 - Modules based on opencv:
@@ -36,17 +38,24 @@
 
 ## Supported Formats
 - Supports for the following pixel formats:
-    * YUV: 420, 44, 422, 400
+    * YUV: 444, 420, 422
     * RGB
     * Gray
-- Support containers:
-    * Raw video (yuv,rgb,gray)
-    * Portable Network Graphics (png)
+- Supported formats:
+    * Raw video:
+        * YUV: 444, 420, 422
+        * RGB
+        * Gray
     * Joint Photographic Experts Group (jpeg)
+    * Portable Map (ppm, pgm)
+- Partially supported formats:
+    * Portable Network Graphics (png)
     * Windows Bitmap (bmp)
     * Tagged Image File Format (tiff)
-    * Portable Map (ppm,pgm,pbm)
 
-## Developers
-- **Joao Carreira**     (jfmcarreira@gmail.com)
-- **Lui­s Lucas**        (luisfrlucas@gmail.com)
+## Development Team
+- [**Joao Carreira**](https://github.com/jfmcarreira) (Founder, Main Developer)
+- [**Lui­s Lucas**   ](https://github.com/lfrlucas)    (Founder, Developer)
+- [**Joao Santos**  ](https://github.com/jpataias)    (Contributor)
+- [**JNSFilipe**    ](https://github.com/JNSFilipe)   (Contributor)
+

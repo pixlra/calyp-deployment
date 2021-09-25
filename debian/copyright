@@ -1,8 +1,8 @@
-Upstream-Name: playuver
-Source: https://github.com/pixlra/playuver
+Upstream-Name: calyp
+Source: https://github.com/pixlra/calyp
 
 Files: *
-Copyright: 2014-2018 Joao Carreira   (jfmcarreira@gmail.com)
-           2014-2018 Luis Lucas      (luisfrlucas@gmail.com)
+Copyright: 2014-2021 Joao Carreira   (jfmcarreira@gmail.com)
+           2014-2021 Luis Lucas      (luisfrlucas@gmail.com)
 
 	   License: GNU GPLv2
