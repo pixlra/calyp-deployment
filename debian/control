@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Joao Carreira <jfmcarreira@gmail.com>
 Build-Depends: cmake,
                debhelper (>= 9.2.0),
+               gcc-10,
                libavcodec-dev,
                libavformat-dev,
                libavutil-dev,
